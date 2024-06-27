@@ -7,6 +7,9 @@ import io
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Jika matplotlib atau seaborn belum terinstal, jalankan perintah berikut:
+# !pip install matplotlib seaborn
+
 # Konfigurasi halaman
 st.set_page_config(
     page_title="Prediksi Transaksi",
