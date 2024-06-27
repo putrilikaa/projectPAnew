@@ -6,11 +6,9 @@ import pandas as pd
 import io
 import matplotlib.pyplot as plt
 import seaborn as sns
+import xlsxwriter  # Mengganti openpyxl dengan xlsxwriter
 
-# Jika matplotlib atau seaborn belum terinstal, jalankan perintah berikut:
-# !pip install matplotlib seaborn
-
-# Konfigurasi halaman
+# Konfigurasi halaman Streamlit
 st.set_page_config(
     page_title="Prediksi Transaksi",
     layout="wide",
@@ -100,18 +98,6 @@ elif selected == 'File Upload':
                 st.write("Hasil Prediksi:")
                 st.write(data)
 
-                # Mengkonversi DataFrame ke Excel dan membuat link download
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                    data.to_excel(writer, index=False, sheet_name='Sheet1')
-                output.seek(0)
-
-                st.download_button(
-                    label="Download hasil prediksi",
-                    data=output,
-                    file_name='hasil_prediksi.xlsx'
-                )
-
                 # Menampilkan tabel statistik deskriptif
                 st.subheader('Karakteristik Jeda Waktu Detik')
                 st.write(data['TX_TIME_SECONDS'].describe().to_frame().T[['mean', '50%', 'std']].rename(columns={'mean': 'Rata-Rata', '50%': 'Median', 'std': 'Varians'}))
@@ -119,17 +105,18 @@ elif selected == 'File Upload':
                 st.subheader('Karakteristik Jumlah Transaksi')
                 st.write(data['TX_AMOUNT'].describe().to_frame().T[['mean', '50%', 'std']].rename(columns={'mean': 'Rata-Rata', '50%': 'Median', 'std': 'Varians'}))
 
-                # Membuat Box Plot untuk TX_TIME_SECONDS
-                st.subheader('Boxplot Jeda Waktu Detik')
-                fig1, ax1 = plt.subplots(figsize=(10, 6))
-                sns.boxplot(x=data['TX_TIME_SECONDS'], ax=ax1)
-                st.pyplot(fig1)
+                # Mengkonversi DataFrame ke Excel menggunakan xlsxwriter tanpa engine_kwargs
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    data.to_excel(writer, index=False, sheet_name='Sheet1')
+                
+                output.seek(0)
 
-                # Membuat Box Plot untuk TX_AMOUNT
-                st.subheader('Boxplot Jumlah Transaksi')
-                fig2, ax2 = plt.subplots(figsize=(10, 6))
-                sns.boxplot(x=data['TX_AMOUNT'], ax=ax2)
-                st.pyplot(fig2)
+                st.download_button(
+                    label="Download hasil prediksi",
+                    data=output,
+                    file_name='hasil_prediksi.xlsx'
+                )
 
             else:
                 st.error('File tidak memiliki kolom yang diperlukan: TX_AMOUNT, TX_TIME_SECONDS')
@@ -168,6 +155,3 @@ elif selected == 'Info':
     - *AUC ROC (Area Under the Receiver Operating Characteristic Curve)* mengukur kinerja model klasifikasi pada berbagai threshold keputusan.
     - *ROC (Receiver Operating Characteristic Curve)* adalah grafik yang menggambarkan rasio True Positive Rate (Sensitivitas) terhadap False Positive Rate (1 - Spesifisitas) untuk berbagai nilai threshold.
     """)
-
-if __name__ == "__main__":
-    st.experimental_rerun()
